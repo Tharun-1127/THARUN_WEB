@@ -23,7 +23,10 @@ router.post('/register', async (req, res) => {
     data.teams.push(newTeam);
     await fs.writeJson(DATA_FILE, data);
     req.session.teamName = teamName;
-    res.json({ success: true });
+    res.json({ 
+        success: true, 
+        finished: false 
+    });
 });
 
 router.post('/login', async (req, res) => {
@@ -36,7 +39,10 @@ router.post('/login', async (req, res) => {
     }
 
     req.session.teamName = teamName;
-    res.json({ success: true });
+    res.json({ 
+        success: true, 
+        finished: team.endTime ? true : false 
+    });
 });
 
 module.exports = router;
