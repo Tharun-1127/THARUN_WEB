@@ -23,6 +23,10 @@
 <div class="card">
     <div class="progress-bar"><div id="progress" class="progress-fill"></div></div>
     <h2 id="stage-title">Question</h2>
+    <div style="text-align: center; margin-bottom: 10px;">
+        <div id="timer" style="font-size: 18px; font-weight: bold; color: #fbbf24;">⏱️ Time: 00:00</div>
+        <div style="font-size: 12px; color: #94a3b8;">Points decrease over time!</div>
+    </div>
     <p id="question-text">Loading...</p>
     <input type="text" id="answer-input" placeholder="Your answer...">
     <button onclick="checkAnswer()">Submit</button>
@@ -54,10 +58,25 @@
             document.getElementById('question-text').innerText = data.question;
             document.getElementById('score').innerText = data.score;
             document.getElementById('progress').style.width = (data.stage / data.total * 100) + '%';
+            
+            // Start timer if not already started
+            if (!window.gameStartTime) {
+                window.gameStartTime = Date.now();
+                startTimer();
+            }
         } catch (error) {
             console.error('Error loading game:', error);
             document.getElementById('question-text').innerText = 'Error loading game. Please refresh.';
         }
+    }
+
+    function startTimer() {
+        setInterval(() => {
+            const elapsed = Math.floor((Date.now() - window.gameStartTime) / 1000);
+            const minutes = Math.floor(elapsed / 60);
+            const seconds = elapsed % 60;
+            document.getElementById('timer').innerText = `⏱️ Time: ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }, 1000);
     }
 
     document.getElementById('answer-input').addEventListener('keypress', function(e) {
