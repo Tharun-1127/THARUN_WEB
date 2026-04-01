@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Browser-Based Treasure Hunt</title>
+    <style>
+        :root { --primary: #6366f1; --bg: #0f172a; --card: #1e293b; }
+        body { font-family: sans-serif; background: var(--bg); color: white; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        .card { background: var(--card); padding: 2rem; border-radius: 12px; width: 100%; max-width: 400px; box-shadow: 0 10px 15px rgba(0,0,0,0.3); margin-bottom: 20px;}
+        input { width: 100%; padding: 10px; margin: 10px 0; border-radius: 6px; border: none; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: var(--primary); border: none; color: white; border-radius: 6px; cursor: pointer; font-weight: bold; margin-bottom: 5px;}
+        .hidden { display: none; }
+        .progress-bar { height: 10px; background: #334155; border-radius: 5px; margin: 20px 0; overflow: hidden; }
+        .progress-fill { height: 100%; background: var(--primary); width: 0%; transition: 0.3s; }
+    </style>
+</head>
+<body>
+
+    <div id="auth-screen" class="card">
+        <h2>Team Login/Register</h2>
+        <input type="text" id="team-name" placeholder="Enter Team Name">
+        <button onclick="login()">Login</button>
+        <button onclick="register()" style="background: #10b981;">Register New Team</button>
+        <p id="auth-message" style="color: #ef4444;"></p>
+    </div>
+
+    <script>
+        document.getElementById('team-name').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                login();
+            }
+        });
+
+        async function login() {
+            const teamName = document.getElementById('team-name').value;
+            if (!teamName) return alert("Enter a team name!");
+            
+            try {
+                const res = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ teamName })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    window.location.href = '/game.html';
+                } else {
+                    document.getElementById('auth-message').innerText = data.error || "Login failed";
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                document.getElementById('auth-message').innerText = "Server not running. Please start the server with 'node server.js'";
+            }
+        }
+
+        async function register() {
+            const teamName = document.getElementById('team-name').value;
+            if (!teamName) return alert("Enter a team name!");
+            
+            try {
+                const res = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ teamName })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    window.location.href = '/game.html';
+                } else {
+                    document.getElementById('auth-message').innerText = data.error || "Registration failed";
+                }
+            } catch (error) {
+                console.error('Registration error:', error);
+                document.getElementById('auth-message').innerText = "Server not running. Please start the server with 'node server.js'";
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+:root { --primary: #6366f1; --bg: #0f172a; --card: #1e293b; }
+body { font-family: 'Inter', sans-serif; background: var(--bg); color: white; display: flex; justify-content: center; padding: 20px; }
+.card { background: var(--card); padding: 2rem; border-radius: 12px; width: 100%; max-width: 400px; box-shadow: 0 10px 15px rgba(0,0,0,0.3); }
+input { width: 100%; padding: 10px; margin: 10px 0; border-radius: 6px; border: none; box-sizing: border-box; }
+button { width: 100%; padding: 12px; background: var(--primary); border: none; color: white; border-radius: 6px; cursor: pointer; font-weight: bold; }
+.progress-bar { height: 10px; background: #334155; border-radius: 5px; margin: 20px 0; overflow: hidden; }
+.progress-fill { height: 100%; background: var(--primary); transition: 0.3s; }
+.hint-text { color: #94a3b8; font-style: italic; margin-top: 10px; }

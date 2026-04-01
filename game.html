@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Browser-Based Treasure Hunt - Game</title>
+    <style>
+        :root { --primary: #6366f1; --bg: #0f172a; --card: #1e293b; }
+        body { font-family: sans-serif; background: var(--bg); color: white; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        .card { background: var(--card); padding: 2rem; border-radius: 12px; width: 100%; max-width: 400px; box-shadow: 0 10px 15px rgba(0,0,0,0.3); margin-bottom: 20px;}
+        input { width: 100%; padding: 10px; margin: 10px 0; border-radius: 6px; border: none; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: var(--primary); border: none; color: white; border-radius: 6px; cursor: pointer; font-weight: bold; margin-bottom: 5px;}
+        .hidden { display: none; }
+        .progress-bar { height: 10px; background: #334155; border-radius: 5px; margin: 20px 0; overflow: hidden; }
+        .progress-fill { height: 100%; background: var(--primary); width: 0%; transition: 0.3s; }
+        .hint-text { color: #94a3b8; font-style: italic; margin: 10px 0; }
+        h2 { margin-top: 0; text-align: center; }
+        p { margin: 10px 0; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <div class="progress-bar"><div id="progress" class="progress-fill"></div></div>
+    <h2 id="stage-title">Question</h2>
+    <p id="question-text">Loading...</p>
+    <input type="text" id="answer-input" placeholder="Your answer...">
+    <button onclick="checkAnswer()">Submit</button>
+    <button onclick="getHint()" style="background:#475569; margin-top: 10px;">Get Hint (-50 pts)</button>
+    <p id="hint-display" class="hint-text"></p>
+    <p>Score: <span id="score">0</span></p>
+</div>
+
+<script>
+    async function loadGame() {
+        try {
+            const res = await fetch('/api/game/status');
+            if (!res.ok) {
+                if (res.status === 401) {
+                    window.location.href = '/';
+                    return;
+                }
+                throw new Error('Failed to load game status');
+            }
+            const data = await res.json();
+            if (data.error) {
+                alert('Error: ' + data.error);
+                return;
+            }
+            if (data.finished) {
+                window.location.href = '/leaderboard.html';
+                return;
+            }
+            document.getElementById('question-text').innerText = data.question;
+            document.getElementById('score').innerText = data.score;
+            document.getElementById('progress').style.width = (data.stage / data.total * 100) + '%';
+        } catch (error) {
+            console.error('Error loading game:', error);
+            document.getElementById('question-text').innerText = 'Error loading game. Please refresh.';
+        }
+    }
+
+    document.getElementById('answer-input').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            checkAnswer();
+        }
+    });
+
+    async function checkAnswer() {
+        const answer = document.getElementById('answer-input').value;
+        try {
+            const res = await fetch('/api/game/answer', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ answer })
+            });
+            if (!res.ok) {
+                throw new Error('Failed to submit answer');
+            }
+            const result = await res.json();
+            if (result.error) {
+                alert('Error: ' + result.error);
+                return;
+            }
+            if (result.correct) {
+                document.getElementById('answer-input').value = '';
+                document.getElementById('hint-display').innerText = '';
+                loadGame();
+            } else {
+                alert("Wrong answer! Try again.");
+            }
+        } catch (error) {
+            console.error('Error submitting answer:', error);
+            alert('Error submitting answer. Please try again.');
+        }
+    }
+
+    async function getHint() {
+        try {
+            const res = await fetch('/api/game/hint');
+            if (!res.ok) {
+                throw new Error('Failed to get hint');
+            }
+            const data = await res.json();
+            if (data.error) {
+                alert('Error: ' + data.error);
+                return;
+            }
+            document.getElementById('hint-display').innerText = "Hint: " + data.hint;
+            loadGame();
+        } catch (error) {
+            console.error('Error getting hint:', error);
+            alert('Error getting hint. Please try again.');
+        }
+    }
+    loadGame();
+</script>
+</body>
+</html>
